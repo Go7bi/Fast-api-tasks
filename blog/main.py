@@ -17,20 +17,20 @@ def get_db():
     finally:
         db.close()
 
-@app.post('/blog',status_code=status.HTTP_201_CREATED)
+@app.post('/blog',status_code=status.HTTP_201_CREATED,tags=['blog'])
 def create(request : schema.blog,db : Session= Depends(get_db)):
-    new_db = models.blog(name = request.name,description = request.description,price =request.price)
+    new_db = models.blog(name = request.name,description = request.description,price =request.price,user_id = 1)
     db.add(new_db)
     db.commit()
     db.refresh(new_db)
     return new_db
 
-@app.get('/blog',response_model=List[schema.Showblog])
+@app.get('/blog',response_model=List[schema.Showblog],tags=['blog'])
 def all(db : Session= Depends(get_db)):
     blogs = db.query(models.blog).all()
     return blogs
 
-@app.delete('/blog/{id}', status_code=status.HTTP_204_NO_CONTENT)
+@app.delete('/blog/{id}', status_code=status.HTTP_204_NO_CONTENT,tags=['blog'])
 def delete(id: int, db: Session = Depends(get_db)):
     blog = db.query(models.blog).filter(models.blog.id == id).first()
     if not blog:
@@ -43,7 +43,7 @@ def delete(id: int, db: Session = Depends(get_db)):
     return 'done'
 
 
-@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED)
+@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED,tags=['blog'])
 def update(id, request: schema.blog, db: Session = Depends(get_db)):
     blogs = db.query(models.blog).filter(models.blog.id == id)
     blog = blogs.first()  
@@ -60,7 +60,7 @@ def update(id, request: schema.blog, db: Session = Depends(get_db)):
 
     return {"message": "Blog updated successfully", "blog": blog}
 
-@app.get('/blogs/{id}',response_model=schema.Showblog)
+@app.get('/blogs/{id}',response_model=schema.Showblog,tags=['blog'])
 def show(id,db : Session= Depends(get_db)):
     blogs = db.query(models.blog).filter(models.blog.id == id).first()
     if not blogs:
@@ -68,10 +68,33 @@ def show(id,db : Session= Depends(get_db)):
                             detail=f'The given id of {id} id not found')
     return blogs
 
-@app.post('/user',status_code=status.HTTP_201_CREATED,)
+@app.post('/user',status_code=status.HTTP_201_CREATED,tags=['post'])
 def user(request : schema.User,db: Session = Depends(get_db)):
     user_db = models.user(name = request.name,email = request.email,password = Hash.bcrpt(request.password))
     db.add(user_db)
     db.commit()
     db.refresh(user_db)
     return user_db
+
+@app.get('/user',response_model=List[schema.Showuser],tags=['post'])
+def showalluser(db: Session = Depends(get_db)):
+    showall = db.query(models.user).all()
+    return showall
+
+@app.get('/user/{id}',response_model=schema.Showuser,tags=['post'])
+def showbyid(id : int,db : Session = Depends(get_db)):
+    user = db.query(models.user).filter(models.user.id == id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail={f'The given id of {id} is no found'})
+    return user
+
+@app.delete('/user/{id}',status_code=status.HTTP_204_NO_CONTENT,tags=['post'])
+def delete(id : int,db : Session = Depends(get_db)):
+    user = db.query(models.user).filter(models.user.id == id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail={f'The given id of {id} is no found'})
+    db.delete(user)
+    db.commit()
+    return 'done'

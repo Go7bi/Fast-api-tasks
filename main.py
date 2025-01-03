@@ -10,7 +10,7 @@ def index():
     return {'data':{'name':'gobi'}}
 
 @app.get('/blog')
-def about(limit=10, published:bool=True, sort:Optional[str]=None):
+def about(limit=15, published:bool=True, sort:Optional[str]=None):
     if published:
         return {'data' f'{limit} published blog from db'}
     return {'data' f'{limit} blog from db'}
@@ -35,3 +35,4 @@ class blog(BaseModel):
 @app.post('/blog')
 def create(blog : blog):
     return {'blog is create by title of' f'{blog.title} and {blog.body}'}
+
