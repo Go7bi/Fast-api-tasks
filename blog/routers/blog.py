@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from ..repository import blog
 from ..database import get_db
 from typing import List
+from ..import oauth
 
 router = APIRouter(
     prefix='/blog',
@@ -11,22 +12,22 @@ router = APIRouter(
 )
 
 @router.post('/',status_code=status.HTTP_201_CREATED)
-def create(request : schema.blog,db : Session= Depends(get_db)):
+def create(request : schema.blog,db : Session= Depends(get_db),get_current_user : schema.User=Depends(oauth.get_current_user)):
     return blog.create(request,db)
 
 @router.get('/',response_model=List[schema.Showblog])
-def all(db : Session= Depends(get_db)):
+def all(db : Session= Depends(get_db),get_current_user : schema.User=Depends(oauth.get_current_user)):
     return blog.get_all(db)
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete(id: int, db: Session = Depends(get_db)):
+def delete(id: int, db: Session = Depends(get_db),get_current_user : schema.User=Depends(oauth.get_current_user)):
     return blog.delete(id,db)
 
 
 @router.put('/{id}', status_code=status.HTTP_202_ACCEPTED)
-def update(id, request: schema.blog, db: Session = Depends(get_db)):
+def update(id, request: schema.blog, db: Session = Depends(get_db),get_current_user : schema.User=Depends(oauth.get_current_user)):
     return blog.change(id,request,db)
 
 @router.get('/{id}',response_model=schema.Showblog)
-def show(id,db : Session= Depends(get_db)):
+def show(id,db : Session= Depends(get_db),get_current_user : schema.User=Depends(oauth.get_current_user)):
     return blog.show_one(id,db)
